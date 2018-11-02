@@ -1,0 +1,129 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              09/30/2018 13:35:33 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: e:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF main.c: LICENSE ERROR (R207(3): REGISTRY READ ERROR)
+
+   1          #include"reg51.h"
+   2          #define uchar unsigned char
+   3          #define uint unsigned int
+   4          #define CLOCK 30    //闹钟阈值，单位为秒
+   5          sbit s=P3^0;
+   6          sbit b=P3^1;
+   7          sbit l1=P3^3;
+   8          sbit l2=P3^4;
+   9          sbit l3=P3^2;
+  10          sbit led=P3^5;    //端口重定义
+  11          uint num,t=0,t1=0,shi,ge,flag=0;
+  12          uchar code duma[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x40};   //共阴极数码管数组
+  13          int delay(uint a)                //延时函数
+  14          {
+  15   1        int c;
+  16   1        for(a;a>0;a--)
+  17   1        for(c=110;c>0;c--);
+  18   1      }
+  19          int main()     
+  20          {
+  21   1        
+  22   1        TMOD = 0x11;
+  23   1          TH0 = (65536-45872)/256;
+  24   1          TL0 = (65536-45872)%256;   //定时器中断0/1分别初始化
+  25   1          EA = 1;                    //工作模式都是1
+  26   1          ET0 = 1;
+  27   1          TR0 = 1;
+  28   1          TH1 = 0xdc;
+  29   1          TL1 = 0xdc;
+  30   1          EA = 1;
+  31   1          ET1 = 1;
+  32   1          TR1 = 1;            
+  33   1                             
+  34   1        while(1)
+  35   1        {
+  36   2          
+  37   2          
+  38   2          if(s == 0)     //暂停按键侦测1
+  39   2          {
+  40   3            flag=~flag;
+  41   3            while(s == 0);   //检测按键是否放开，放开后代码向下执行
+  42   3          }
+  43   2            
+  44   2          if(b == 0)    //清空按键侦测
+  45   2          {
+  46   3            t=0;
+  47   3            
+  48   3            while(b == 0);
+  49   3          }
+  50   2          
+  51   2        }
+  52   1      }
+  53            
+C51 COMPILER V9.56.0.0   MAIN                                                              09/30/2018 13:35:33 PAGE 2   
+
+  54            
+  55            
+  56          
+  57          void time() interrupt 1       //定时器中断0，计时中断
+  58          {
+  59   1        TH0 = (65536-45872)/256;
+  60   1          TL0 = (65536-45872)%256;   //中断重载，周期为50ms
+  61   1        num=num+1;
+  62   1        
+  63   1        if(num==20)     //20个中断为1s
+  64   1        {
+  65   2          num=0;
+  66   2          if(t<CLOCK){    //闹钟检测
+  67   3          if(flag==0)     //判断定时器是否暂停，运行进行t++，暂停t1++
+  68   3          {
+  69   4          t++;
+  70   4            t1=0;
+  71   4          }
+  72   3          else {t1++;}
+  73   3          }
+  74   2          else led=~led;    //闹钟激活时进行led取反
+  75   2          
+  76   2          
+  77   2        }
+  78   1      }
+  79          void display() interrupt 3    //显示中断，原理为扫描显示
+  80          {
+  81   1        TH1 = 0xdc;
+  82   1          TL1 = 0xdc;
+  83   1        shi=t/10;
+  84   1          ge=t%10;
+  85   1          l1=0;
+  86   1          P2=duma[shi];
+  87   1          delay(5);
+  88   1          l1=1;
+  89   1          P2=0xff;
+  90   1          l2=0;
+  91   1          P2=duma[ge];
+  92   1          delay(5);
+  93   1          l2=1;
+  94   1          P2=0xff;
+  95   1        l3=0;
+  96   1          P2=duma[t1%10];
+  97   1          delay(5);
+  98   1          l3=1;
+  99   1          P2=0xff;
+ 100   1      }
+*** WARNING C290 IN LINE 18 OF main.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    319    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     12    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)
