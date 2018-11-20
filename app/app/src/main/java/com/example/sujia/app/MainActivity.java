@@ -22,7 +22,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener {
@@ -47,6 +49,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
     private OutputStream os;
     // 服务端利用线程不断接受客户端信息
     private AcceptThread thread;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +84,19 @@ public class MainActivity extends Activity implements OnItemClickListener {
         registerReceiver(receiver, filter);
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
+
+        Switch powerSwitch=(Switch)findViewById(R.id.switch2);
+
+        if(arrayAdapter!=null)
+        powerSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                send("1");
+                else
+                    send("2");
+            }
+        });
 
         // 实例接收客户端传过来的数据线程
         thread = new AcceptThread();
@@ -141,6 +157,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
             //通过地址获取到该设备
             selectDevice = mBluetoothAdapter.getRemoteDevice(address);
         }
+        send("1");
+        /*
         // 这里需要try catch一下，以防异常抛出
         try {
             // 判断客户端接口是否为空
@@ -168,8 +186,38 @@ public class MainActivity extends Activity implements OnItemClickListener {
             e.printStackTrace();
             // 如果发生异常则告诉用户发送失败
             Toast.makeText(this, "发送信息失败", 0).show();
-        }
+        }*/
 
+    }
+    private void send(String t)
+    {
+        try {
+            // 判断客户端接口是否为空
+            if (clientSocket == null) {
+                // 获取到客户端接口
+                clientSocket = selectDevice
+                        .createRfcommSocketToServiceRecord(MY_UUID);
+                // 向服务端发送连接
+                clientSocket.connect();
+                // 获取到输出流，向外写数据
+                os = clientSocket.getOutputStream();
+
+            }
+            // 判断是否拿到输出流
+            if (os != null) {
+                // 需要发送的信息
+                String text = t;
+                // 以utf-8的格式发送出去
+                os.write(text.getBytes("UTF-8"));
+            }
+            // 吐司一下，告诉用户发送成功
+            Toast.makeText(this, t, 0).show();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            // 如果发生异常则告诉用户发送失败
+            Toast.makeText(this, "发送信息失败", 0).show();
+        }
     }
 
     // 创建handler，因为我们接收是采用线程来接收的，在线程中无法操作UI，所以需要handler
