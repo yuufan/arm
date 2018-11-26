@@ -25,6 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener {
@@ -67,6 +68,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
         lvDevices.setAdapter(arrayAdapter);
         // 为listView设置item点击事件侦听
         lvDevices.setOnItemClickListener(this);
+        //textview实例化
+        final TextView power=(TextView)findViewById(R.id.textView);
 
         // 用Set集合保持已绑定的设备
         Set<BluetoothDevice> devices = mBluetoothAdapter.getBondedDevices();
@@ -85,16 +88,27 @@ public class MainActivity extends Activity implements OnItemClickListener {
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
 
-        Switch powerSwitch=(Switch)findViewById(R.id.switch2);
+        final Switch powerSwitch=(Switch)findViewById(R.id.switch2);
 
         if(arrayAdapter!=null)
         powerSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                send("1");
-                else
-                    send("2");
+                if(selectDevice==null)
+                {
+                    Toast.makeText(getApplicationContext(), "请先绑定蓝牙设备",
+                         Toast.LENGTH_SHORT).show();
+                    powerSwitch.setChecked(false);
+                }
+                else{
+                    if (isChecked) {
+                        send("1");
+                        power.setText("On");}
+                    else {
+                        send("2");
+                        power.setText("Off");
+                    }
+                }
             }
         });
 
@@ -139,10 +153,11 @@ public class MainActivity extends Activity implements OnItemClickListener {
         }
     };
 
-    // 点击listView中的设备，传送数据
+    // 点击listView中的设备，绑定设备
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,
                             long id) {
+
         // 获取到这个设备的信息
         String s = arrayAdapter.getItem(position);
                // 对其进行分割，获取到这个设备的地址
@@ -156,6 +171,9 @@ public class MainActivity extends Activity implements OnItemClickListener {
         if (selectDevice == null) {
             //通过地址获取到该设备
             selectDevice = mBluetoothAdapter.getRemoteDevice(address);
+        }
+        if(selectDevice!=null) {
+            Toast.makeText(this, "绑定成功", 0);
         }
         send("1");
         /*
@@ -212,6 +230,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
             }
             // 吐司一下，告诉用户发送成功
             Toast.makeText(this, t, 0).show();
+            //Switch powerSitch=(Switch)findViewById(R.id.switch2);
+            //powerSitch.setChecked(!powerSitch.isChecked());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
